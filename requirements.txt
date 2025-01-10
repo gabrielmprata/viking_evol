@@ -1,0 +1,10 @@
+streamlit
+altair
+pandas
+jsonschema
+matplotlib
+numpy
+plotly
+plotly-express
+urllib3
+streamlit-extras==0.3.5

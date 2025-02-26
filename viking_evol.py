@@ -53,7 +53,7 @@ df_bio_medidas['ano_mes'] = df_bio_medidas['data'].dt.strftime('%Y-%m')
 maxi = '2025-01'
 mes_ant = '2024-12'
 
-maxia = '2024-12'
+maxia = '2025-01'
 
 # Construção dos Datasets
 # 1. Avaliação InBody ATUAL
@@ -155,7 +155,7 @@ df_adp_his = pv_adp_his.set_axis(
 
 # Criando campo historico
 df_adp_his["historico"] = "[" + df_adp_his[('medida', '2023-12')].apply(str) + ", " + df_adp_his[('medida', '2024-03')].apply(str) + ", " + df_adp_his[('medida', '2024-06')].apply(str) + ", " + df_adp_his[('medida', '2024-10')].apply(str) + ", " + df_adp_his[('medida', '2024-11')].apply(
-    str) + ", " + df_adp_his[('medida', '2024-12')].apply(str) + "]"
+    str) + ", " + df_adp_his[('medida', '2024-12')].apply(str) + ", " + df_adp_his[('medida', '2025-01')].apply(str) + "]"
 
 # 4.5 Histórico Dobras Cutâneas
 df_atp_med = (df_adp[['ano_mes', 'indicador', 'medida']]
@@ -168,7 +168,8 @@ df_atp_med_col = df_atp_med.groupby(['indicador'], as_index=False).apply(lambda 
                                                                                               '2024-06': x.loc[x.ano_mes == '2024-06']['medida'].sum(),
                                                                                               '2024-10': x.loc[x.ano_mes == '2024-10']['medida'].sum(),
                                                                                               '2024-11': x.loc[x.ano_mes == '2024-11']['medida'].sum(),
-                                                                                              '2024-12': x.loc[x.ano_mes == '2024-12']['medida'].sum()
+                                                                                              '2024-12': x.loc[x.ano_mes == '2024-12']['medida'].sum(),
+                                                                                              '2025-01': x.loc[x.ano_mes == '2025-01']['medida'].sum()
                                                                                               }
                                                                                              ))
 
@@ -181,7 +182,7 @@ df_atp_med_col = df_atp_med.groupby(['indicador'], as_index=False).apply(lambda 
 
 # Criando campo historico
 df_atp_med_col["historico"] = "[" + df_atp_med_col[('2023-12')].apply(str) + ", " + df_atp_med_col[('2024-03')].apply(str) + ", " + df_atp_med_col[('2024-06')].apply(
-    str) + ", " + df_atp_med_col[('2024-10')].apply(str) + ", " + df_atp_med_col[('2024-11')].apply(str) + ", " + df_atp_med_col[('2024-12')].apply(str) + "]"
+    str) + ", " + df_atp_med_col[('2024-10')].apply(str) + ", " + df_atp_med_col[('2024-11')].apply(str) + ", " + df_atp_med_col[('2024-12')].apply(str) + ", " + df_atp_med_col[('2025-01')].apply(str) + "]"
 
 
 # 4.6 Histórico Medidas
@@ -193,13 +194,14 @@ df_bio_medidas_col = df_bio_medidas.groupby(['antropometria'], as_index=False).a
                                                                                                           '2024-08': x.loc[x.ano_mes == '2024-08']['medida'].sum(),
                                                                                                           '2024-10': x.loc[x.ano_mes == '2024-10']['medida'].sum(),
                                                                                                           # '2024-11':x.loc[x.ano_mes=='2024-11']['medida'].sum(),
-                                                                                                          '2024-12': x.loc[x.ano_mes == '2024-12']['medida'].sum()
+                                                                                                          '2024-12': x.loc[x.ano_mes == '2024-12']['medida'].sum(),
+                                                                                                          '2025-01': x.loc[x.ano_mes == '2025-01']['medida'].sum()
                                                                                                           }
                                                                                                          ))
 
 # Criando campo historico
 df_bio_medidas_col["historico"] = "[" + df_bio_medidas_col[('2023-12')].apply(str) + ", " + df_bio_medidas_col[('2024-03')].apply(str) + ", " + df_bio_medidas_col[('2024-05')].apply(str) + ", " + df_bio_medidas_col[('2024-06')].apply(
-    str) + ", " + df_bio_medidas_col[('2024-08')].apply(str) + ", " + df_bio_medidas_col[('2024-10')].apply(str) + ", " + df_bio_medidas_col[('2024-12')].apply(str) + "]"
+    str) + ", " + df_bio_medidas_col[('2024-08')].apply(str) + ", " + df_bio_medidas_col[('2024-10')].apply(str) + ", " + df_bio_medidas_col[('2024-12')].apply(str) + ", " + df_bio_medidas_col[('2025-01')].apply(str) + "]"
 
 
 #######################
@@ -340,6 +342,9 @@ with st.expander("Histórico Músculo-Gordura", expanded=True):
 with st.expander("Histórico do Porcentual de Gordura", expanded=True):
     st.plotly_chart(gr_pcg, use_container_width=True)
 
+################################################################################
+## ****************************************************************************##
+
 st.markdown("## :orange[Adipômetro - Método Faulkner]")
 
 with st.expander("Avaliação Atual", expanded=True):
@@ -350,10 +355,10 @@ with st.expander("Avaliação Atual", expanded=True):
         st.dataframe(
             df_adp_his,
             column_order=(
-                "indicador", "('medida', '2024-12')", "historico"),
+                "indicador", "('medida', '2025-01')", "historico"),
             column_config={
                 "indicador": "Indicador",
-                "('medida', '2024-12')": "2024-12",
+                "('medida', '2025-01')": "2025-01",
                 "historico": st.column_config.LineChartColumn(
                     "Histórico "
                 ),
@@ -378,13 +383,12 @@ with st.expander("Histórico Dobras Cutâneas", expanded=True):
     st.dataframe(
         df_atp_med_col,
         column_order=(
-            "indicador", "2024-06", "2024-10", "2024-11", "2024-12", "historico"),
+            "indicador", "2024-11", "2024-12", "2025-01",   "historico"),
         column_config={
             "indicador": "Indicador",
-            "2024-06": "2024-06",
-            "2024-10": "2024-10",
             "2024-11": "2024-11",
             "2024-12": "2024-12",
+            "2025-01": "2025-01",
             "historico": st.column_config.LineChartColumn(
                 "Histórico "
             ),
@@ -397,14 +401,12 @@ with st.expander("Histórico Medidas Corporais", expanded=True):
     st.dataframe(
         df_bio_medidas_col,
         column_order=(
-            "antropometria", "2024-05", "2024-06", "2024-08", "2024-10", "2024-12", "historico"),
+            "antropometria", "2024-10", "2024-12", "2025-01", "historico"),
         column_config={
             "antropometria": "Antropometria",
-            "2024-05": "2024-05",
-            "2024-06": "2024-06",
-            "2024-08": "2024-08",
-            "2024-10": "2024-10",
+            "2024-11": "2024-10",
             "2024-12": "2024-12",
+            "2025-01": "2025-01",
             "historico": st.column_config.LineChartColumn(
                 "Histórico "
             ),

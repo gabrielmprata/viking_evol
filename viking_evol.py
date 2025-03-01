@@ -122,46 +122,29 @@ df_inbody_pgc = (
 # ****************************************************************************#
 
 # 4. Adpometro
-# Composição atual
+# Composição atual Grafico pizza
 df_atp_aval = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
                [(df_adp['ano_mes'] == mes_adp) & ((df_adp['indicador'] == 'peso gordura') |
                                                   (df_adp['indicador'] == 'peso magro'))]
                )
 
 # Historico
-# Histórico Adipômetro da composição corporal (%)
 
+# Histórico Adipômetro da composição corporal (%)
+# grafico de barras
 df_atp_his = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
               [((df_adp['indicador'] == 'não gordura')
                 | (df_adp['indicador'] == 'gordura'))]
               )
 
 # Histórico Adipômetro da composição corporal (Kg)
+# grafico de barras
 df_atp_his_kg = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
                  [((df_adp['indicador'] == 'peso gordura')
                    | (df_adp['indicador'] == 'peso magro'))]
                  )
 
-# 4. Adpometro Historico de todas as metricas para o St.dataframe
-df_adp_his = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
-              [((df_adp['indicador'] == 'peso gordura') |
-                (df_adp['indicador'] == 'peso magro') | (df_adp['indicador'] == 'peso') |
-                  (df_adp['indicador'] == 'não gordura') | (df_adp['indicador'] == 'gordura'))]
-              )
-
-# Criando pivot table
-pv_adp_his = pd.pivot_table(df_adp_his, index=['indicador'], aggfunc='sum', columns=[
-                            'ano_mes'], values=['medida'], fill_value=0)
-
-# Convert Pivot in Dataframe
-df_adp_his = pv_adp_his.set_axis(
-    pv_adp_his.columns.tolist(), axis=1).reset_index()
-
-# Criando campo historico
-df_adp_his["historico"] = "[" + df_adp_his[('medida', '2023-12')].apply(str) + ", " + df_adp_his[('medida', '2024-03')].apply(str) + ", " + df_adp_his[('medida', '2024-06')].apply(str) + ", " + df_adp_his[('medida', '2024-10')].apply(str) + ", " + df_adp_his[('medida', '2024-11')].apply(
-    str) + ", " + df_adp_his[('medida', '2024-12')].apply(str) + ", " + df_adp_his[('medida', '2025-01')].apply(str) + "]"
-
-# Criando tabela comparativa entre mes atual e anterior
+# 4. Adpometro metrics atual vs anterior
 df_atp_res = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
               [((df_adp['ano_mes'] == mes_adp) | (df_adp['ano_mes'] == mes_adp_ant)) & ((df_adp['indicador'] == 'peso gordura') |
                                                                                         (df_adp['indicador'] == 'peso magro') | (df_adp['indicador'] == 'peso') |
@@ -169,20 +152,35 @@ df_atp_res = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
               )
 
 # SUM(CASE WHEN)
-df_atp_res_col = df_atp_res.groupby(['indicador'], as_index=False).apply(lambda x: pd.Series({mes_adp_ant: x.loc[x.ano_mes == mes_adp_ant]['medida'].sum(),
-                                                                                              mes_adp: x.loc[x.ano_mes == mes_adp]['medida'].sum(
-)
-}
-))
+df_atp_res_col = df_atp_res.groupby(['indicador'], as_index=False).apply(lambda x: pd.Series({'mes_adp_ant': x.loc[x.ano_mes == mes_adp_ant]['medida'].sum(),
+                                                                                              'mes_adp': x.loc[x.ano_mes == mes_adp]['medida'].sum()
+                                                                                              }
+                                                                                             ))
 
-df_atp_res_col["dif"] = df_atp_res_col[mes_adp] - df_atp_res_col[mes_adp_ant]
+df_atp_res_col["dif"] = df_atp_res_col['mes_adp'] - \
+    df_atp_res_col['mes_adp_ant']
 
-# merge com a atebla de historico
-df_adp_his_st = pd.merge(df_adp_his, df_atp_res_col, left_on=[
-                         'indicador'], right_on=['indicador'])
+# variaveis para o st.metric
+# Gordura
+adp_fat = (df_atp_res_col.mes_adp.values[0]).round(2)
+adp_fat_dif = (df_atp_res_col.dif.values[0]).round(2)
 
-df_adp_his_st_x = df_adp_his_st[['indicador',
-                                 mes_adp_ant, mes_adp, 'dif', 'historico']]
+# não gordura
+adp_mass = (df_atp_res_col.mes_adp.values[1]).round(2)
+adp_mass_dif = (df_atp_res_col.dif.values[1]).round(2)
+
+# peso
+adp_peso = (df_atp_res_col.mes_adp.values[2]).round(2)
+adp_peso_dif = (df_atp_res_col.dif.values[2]).round(2)
+
+# peso gordura
+adp_peso_fat = (df_atp_res_col.mes_adp.values[3]).round(2)
+adp_peso_fat_dif = (df_atp_res_col.dif.values[3]).round(2)
+
+# peso magro
+adp_peso_mass = (df_atp_res_col.mes_adp.values[4]).round(2)
+adp_peso_mass_dif = (df_atp_res_col.dif.values[4]).round(2)
+
 
 # 4.5 Histórico Dobras Cutâneas
 df_atp_med = (df_adp[['ano_mes', 'indicador', 'medida']]
@@ -366,22 +364,32 @@ st.markdown("## :orange[Adipômetro - Método Faulkner]")
 
 with st.expander("Avaliação Atual", expanded=True):
 
-    col = st.columns((4.1, 4.1), gap='medium')
+    col = st.columns((1.1, 1.1, 1.1, 1.1), gap='medium')
 
     with col[0]:
-        st.dataframe(
-            df_adp_his_st_x,
-            column_config={
-                "historico": st.column_config.LineChartColumn(
-                    "Histórico "
-                ),
-            },
-            hide_index=True,
-        )
+        #######################
+        # Quadro com o total e a variação
+        st.markdown('### Peso')
+        st.metric(label="", value=str(adp_peso), delta=str(adp_peso_dif))
 
     with col[1]:
-        st.plotly_chart(gr_adp_comp, use_container_width=True)
+        st.markdown('### Massa Magra')
+        st.metric(label="", value=str(adp_peso_mass),
+                  delta=str(adp_peso_mass_dif))
 
+    with col[2]:
+        st.markdown('### Massa Gorda')
+        st.metric(delta_color="inverse", label="", value=str(
+            adp_peso_fat), delta=str(adp_peso_fat_dif))
+
+    with col[3]:
+        st.markdown('### % Gordura')
+        st.metric(delta_color="inverse", label="",
+                  value=str(adp_fat), delta=str(adp_fat_dif))
+
+    st.plotly_chart(gr_adp_comp, use_container_width=True)
+
+###################################################################################
 with st.expander("Histórico Composição Corporal", expanded=True):
     col = st.columns((4.1, 4.1), gap='medium')
 

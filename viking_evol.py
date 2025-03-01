@@ -387,7 +387,28 @@ with st.expander("Avaliação Atual", expanded=True):
         st.metric(delta_color="inverse", label="",
                   value=str(adp_fat), delta=str(adp_fat_dif))
 
-    st.plotly_chart(gr_adp_comp, use_container_width=True)
+    st.markdown(" ")
+    st.markdown(" ")
+
+    col = st.columns((4.1, 4.1), gap='medium')
+
+    with col[0]:
+        st.dataframe(
+            df_atp_res_col,
+            column_order=(
+                "indicador", "mes_adp_ant", "mes_adp", "dif"),
+            column_config={
+                "indicador": "Indicador",
+                "mes_adp_ant": "Anterior",
+                "mes_adp": "Atual",
+                "dif": "Dif",
+            },
+            hide_index=True,
+        )
+
+    with col[1]:
+        st.plotly_chart(gr_adp_comp, use_container_width=True)
+
 
 ###################################################################################
 with st.expander("Histórico Composição Corporal", expanded=True):

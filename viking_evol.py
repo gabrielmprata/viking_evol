@@ -56,6 +56,9 @@ mes_ant = '2024-12'
 maxia = '2025-02'
 maxia_ant = '2025-01'
 
+mes_adp = '2025-02'
+mes_adp_ant = '2025-01'
+
 # Construção dos Datasets
 # 1. Avaliação InBody ATUAL
 # Peso
@@ -121,8 +124,8 @@ df_inbody_pgc = (
 # 4. Adpometro
 # Composição atual
 df_atp_aval = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
-               [(df_adp['ano_mes'] == maxia) & ((df_adp['indicador'] == 'peso gordura') |
-                                                (df_adp['indicador'] == 'peso magro'))]
+               [(df_adp['ano_mes'] == mes_adp) & ((df_adp['indicador'] == 'peso gordura') |
+                                                  (df_adp['indicador'] == 'peso magro'))]
                )
 
 # Historico
@@ -157,6 +160,29 @@ df_adp_his = pv_adp_his.set_axis(
 # Criando campo historico
 df_adp_his["historico"] = "[" + df_adp_his[('medida', '2023-12')].apply(str) + ", " + df_adp_his[('medida', '2024-03')].apply(str) + ", " + df_adp_his[('medida', '2024-06')].apply(str) + ", " + df_adp_his[('medida', '2024-10')].apply(str) + ", " + df_adp_his[('medida', '2024-11')].apply(
     str) + ", " + df_adp_his[('medida', '2024-12')].apply(str) + ", " + df_adp_his[('medida', '2025-01')].apply(str) + "]"
+
+# Criando tabela comparativa entre mes atual e anterior
+df_atp_res = (df_adp[['data', 'ano_mes', 'indicador', 'medida']]
+              [((df_adp['ano_mes'] == mes_adp) | (df_adp['ano_mes'] == mes_adp_ant)) & ((df_adp['indicador'] == 'peso gordura') |
+                                                                                        (df_adp['indicador'] == 'peso magro') | (df_adp['indicador'] == 'peso') |
+                                                                                        (df_adp['indicador'] == 'não gordura') | (df_adp['indicador'] == 'gordura'))]
+              )
+
+# SUM(CASE WHEN)
+df_atp_res_col = df_atp_res.groupby(['indicador'], as_index=False).apply(lambda x: pd.Series({mes_adp_ant: x.loc[x.ano_mes == mes_adp_ant]['medida'].sum(),
+                                                                                              mes_adp: x.loc[x.ano_mes == mes_adp]['medida'].sum(
+)
+}
+))
+
+df_atp_res_col["dif"] = df_atp_res_col[mes_adp] - df_atp_res_col[mes_adp_ant]
+
+# merge com a atebla de historico
+df_adp_his_st = pd.merge(df_adp_his, df_atp_res_col, left_on=[
+                         'indicador'], right_on=['indicador'])
+
+df_adp_his_st_x = df_adp_his_st[['indicador',
+                                 mes_adp_ant, mes_adp, 'dif', 'historico']]
 
 # 4.5 Histórico Dobras Cutâneas
 df_atp_med = (df_adp[['ano_mes', 'indicador', 'medida']]
@@ -344,12 +370,8 @@ with st.expander("Avaliação Atual", expanded=True):
 
     with col[0]:
         st.dataframe(
-            df_adp_his,
-            column_order=(
-                "indicador", "('medida', '2025-02')", "historico"),
+            df_adp_his_st_x,
             column_config={
-                "indicador": "Indicador",
-                "('medida', '2025-02')": "2025-02",
                 "historico": st.column_config.LineChartColumn(
                     "Histórico "
                 ),
